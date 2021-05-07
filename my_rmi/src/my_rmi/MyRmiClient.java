@@ -17,9 +17,10 @@ public class MyRmiClient {
 	private final int sendChoice = 1;
 	private final int quitChoice = 2;
 	
-	FirstInterface rmtObj;
-	ClientCallbackInterface clntObj;
-	 Vector<Pakcet> packetVectorToSend = new Vector<Pakcet>();
+	protected FirstInterface rmtObj;
+	protected ClientCallbackInterface clntObj;
+	protected Vector<Pakcet> packetVectorToSend = new Vector<Pakcet>();
+	
 	
 	private MyRmiClient(String host) throws RemoteException, IOException, InterruptedException, NotBoundException {
 		// getting names to the registry
@@ -28,7 +29,7 @@ public class MyRmiClient {
 		// wywo³anie meody register() na rmtObjs
 		clntObj = new MyCLientCallback();
 		rmtObj.register(clntObj);
-		
+	
 		populateVector();
 		
 	//	String response = rmtObj.supMadafaka();
@@ -41,17 +42,21 @@ public class MyRmiClient {
 		while(!userDone) {
 			switch (menu()) {
 			case (sendChoice) :
-				sendToServer();
+				String result = sendToServer();
+				if (!result.isEmpty()) {
+					System.out.println(result);
+				}
 				break;
 			case (quitChoice) :
 				userDone = true;
+			break;
 			default:
 				System.out.println("Wrong command");
 			}
 		}
 		
 		rmtObj.unregister(clntObj);
-		
+
 	}
 	
 	public static void main(String[] args) {
@@ -59,6 +64,7 @@ public class MyRmiClient {
 		String host = (args.length < 1) ? null : args[0];
 		try {
 			new MyRmiClient(host);
+			System.exit(0);
 		} catch (Exception e) {
 			System.err.println("Client exception: " + e.toString());
 			e.printStackTrace();
@@ -70,7 +76,8 @@ public class MyRmiClient {
 	 */
 	private int  menu() throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        System.out.print("What do you want to do\n");
+        System.out.print("[menu] What do you want to do?\n");
+        System.out.println("[s]end package, [q]uit");
         String s = br.readLine();
         switch (s) {
         case "s":
@@ -85,19 +92,20 @@ public class MyRmiClient {
 	/*
 	 * wysy³a dane na serwer wywo³uj¹c metodê zdalnego obiektu rmtObj
 	 */
-	private void sendToServer() throws IOException, InterruptedException {
+	private String sendToServer() throws IOException, InterruptedException {
 		int n = chooseWhatToSend();
 		if (n != 0) {
-			System.out.println(rmtObj.supMadafaka("Siemanko"));
+			return (rmtObj.saveRemotely(packetVectorToSend.get(n-1), clntObj));
 		}
+		return "";
 	}
 
-	/*
+	/*)
 	 * zwraca wybór u¿ytkownika, który pakiet chce przes³aæ
 	 */
 	private int chooseWhatToSend() throws IOException{
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		System.out.println("Which element do you want to send to server?");
+		System.out.println("[send] Which element do you want to send to server?");
 		int count = 1;
 		for (Pakcet el : packetVectorToSend) {
 			System.out.print(count + ")");
@@ -115,15 +123,15 @@ public class MyRmiClient {
 						 if (i > 0 && i <= packetVectorToSend.size()) {
 							 return i;
 						 } else {
-							 System.out.println("Does not exist. Choose again or [q]uit");
+							 System.out.println("[send] Does not exist. Choose again or return to [m]enu");
 						 }
 					 } catch(NumberFormatException nfe) {
-						 if (!s.matches("q")) {
-							 System.out.println("Wrong format. Try again or [q]uit");
+						 if (!s.matches("m")) {
+							 System.out.println("[send] Wrong format. Try again or return to [m]enu");
 						 }
 					 }
 
-				 }	while (!s.matches("q"));
+				 }	while (!s.matches("m"));
 				 
 				 return 0;
 	}

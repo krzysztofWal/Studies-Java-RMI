@@ -6,17 +6,23 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 import lab_1.Pakcet;
+import lab_1.Spectrum;
 import lab_1.TimeHistory;
 
 public class MyRmiServant extends UnicastRemoteObject implements FirstInterface {
 	private static final long serialVersionUID = -4270368481502787095L;
-	protected Map<ClientCallbackInterface, TimeHistory> thMap = new HashMap<>();
+	protected Map<String, PcktClientPair> thMap = new HashMap<>();
+	protected Map<String, PcktClientPair> spMap = new HashMap<>();
 	protected Vector<ClientCallbackInterface> clients = new Vector<ClientCallbackInterface>();
 	protected String localMadafaka = "Not yo";
 	protected String localSamuel = "Not";
+	//protected Map<Integer,String> saveRemotelyResult = new HashMap<>();
 	
 	public MyRmiServant() throws RemoteException {}
 	
+	/*
+	 * Zdalne metody udostêpniane przez serwer
+	 */
 	public boolean register(ClientCallbackInterface clbck) throws RemoteException {
 		System.out.println("Server.register(): " + clbck.hashCode());
 		//jeœli jest nie ma takiego delikwenta to dodaj
@@ -51,17 +57,20 @@ public class MyRmiServant extends UnicastRemoteObject implements FirstInterface 
 		susThr.join();
 		return localSamuel;
 	}
+
+	//zwraca SaveRemotelyResult
+	public String saveRemotely(Pakcet pckt, ClientCallbackInterface clbck) throws RemoteException,InterruptedException {
+		SaveRemotelyThread srmtlTh = new SaveRemotelyThread(pckt, clbck);
+		String saveRemotelyResult = srmtlTh.saveRemotelyResult;
+		System.out.println("Thread waiting");
+	//	srmtlTh.join();
+		srmtlTh.notify();
+		return saveRemotelyResult;
+	}
 	
 	/*
-	 * public String saveRemotely(Pakcet pckt) throws InterruptedException {
-	 * SaveRemotelyThread svThr = new SaveRemotelyThread(pckt); svThr.join(); return
-	 * "Package saved on server"; }
-	 */	
-	public boolean saveRemotely(Pakcet pckt) throws RemoteException {
-		
-		
-		return true;
-	}
+	 * W¹tki u¿yte w wykonywaniu poszczególnych metod
+	 */
 	
 	class supMadafakaThread extends Thread{
 		String localSay = "";
@@ -72,9 +81,7 @@ public class MyRmiServant extends UnicastRemoteObject implements FirstInterface 
 			localSay = saySth;
 		}
 		
-		/*
-		 * private String supMadafaka() { String temp = "yo"; return temp; }
-		 */
+
 		
 		public void run( ) {
 			localMadafaka = localSay;
@@ -97,18 +104,73 @@ public class MyRmiServant extends UnicastRemoteObject implements FirstInterface 
 		}
 	}
 	
+	class RegisterThread extends Thread {
+		ClientCallbackInterface clbk;
+		
+		RegisterThread(ClientCallbackInterface clbk) {
+			
+		}
+	}
+	
+	// zapisuje wynik w zmiennej saveRemotelyResult
 	class SaveRemotelyThread extends Thread{
 		Pakcet locObj;
+		ClientCallbackInterface clbck;
+		public String saveRemotelyResult;
 		
-		public SaveRemotelyThread(Pakcet pckt) {
+		public SaveRemotelyThread(Pakcet pckt, ClientCallbackInterface clbck) throws InterruptedException{
 			super("saveRemotelyThread");
+			saveRemotelyResult = "";
 			synchronized(this) {
-				locObj = pckt;
+				//System.out.println(pckt.getClassStringId());
+				//System.out.println((new TimeHistory<Integer>()).getClassStringId());
+				//System.out.println(pckt.getClassStringId().equals((new TimeHistory<Integer>()).getClassStringId()));
+				//System.out.println(pckt.getClassStringId().compareTo((new TimeHistory<Integer>()).getClassStringId()));
+				if (pckt.getClassStringId().equals((new TimeHistory<Integer>()).getClassStringId())) {
+					if (!thMap.containsKey(pckt.toString())) {
+						thMap.put(pckt.toString(),new PcktClientPair(pckt, clbck));
+						saveRemotelyResult = "Saved sent TimeHistory packet";
+					} else {
+						saveRemotelyResult = "TimeHistory packet already sent";
+					}
+				} else if (pckt.getClassStringId().equals((new Spectrum<Integer>()).getClassStringId())) {
+					if (!spMap.containsKey(pckt.toString())) {
+						spMap.put(pckt.toString(),new PcktClientPair(pckt, clbck));
+						saveRemotelyResult = "Saved sent Spectrum packet";
+					} else {
+						saveRemotelyResult = "Spectrum packet already sent";
+					}
+				} else {
+					saveRemotelyResult = "Failed saving package";
+				}
+				this.wait();
+				System.out.println("Thread finished");
 				start();
 			}
 		}
 	
-		public void run() {}
+		public void run() {
+		}
 	}
 	
+	/*
+	 * klasa przechowuj¹ca pakiet i przez którego klienta zosta³ zapisany
+	 */
+	static class PcktClientPair {
+		private Pakcet packet;
+		private ClientCallbackInterface clbck;
+		
+		public PcktClientPair(Pakcet pck, ClientCallbackInterface clbck) {
+			this.packet = pck;
+			this.clbck = clbck;
+		}
+		
+		public Pakcet getPakcet() {
+			return this.packet;
+		}
+		
+		public ClientCallbackInterface getCallbackObj() {
+			return this.clbck;
+		}
+	}
 }

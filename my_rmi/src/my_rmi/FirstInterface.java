@@ -9,6 +9,6 @@ public interface FirstInterface extends Remote{
 	String supSamuel() throws InterruptedException, RemoteException;
 	boolean register(ClientCallbackInterface clbck) throws RemoteException;
 	boolean unregister(ClientCallbackInterface clbck) throws RemoteException;
-	boolean saveRemotely(Pakcet pckt) throws RemoteException;
+	String saveRemotely(Pakcet pckt, ClientCallbackInterface clbck) throws RemoteException, InterruptedException;
 	
 }

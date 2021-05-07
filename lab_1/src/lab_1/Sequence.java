@@ -1,6 +1,8 @@
 package lab_1;
 
 public abstract class Sequence<T> extends Pakcet{
+
+	private static final long serialVersionUID = -8733023938472258079L;
 	protected int channelNr;
 	protected String unit;
 	protected double resolution;

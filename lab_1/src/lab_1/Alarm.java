@@ -1,6 +1,8 @@
 package lab_1;
 
 public class Alarm<T> extends Pakcet {
+
+	private static final long serialVersionUID = 730860328813566203L;
 	private int channelNr;
 	private T threshold;
 	private int direction; // 0 - dowolny, -1 - w dó³, 1 - w górê

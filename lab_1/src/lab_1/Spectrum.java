@@ -1,11 +1,8 @@
 package lab_1;
 
-/*
-pomocniczy komentarz
-
-*/
-
 public class Spectrum<T> extends Sequence<T> {
+
+	private static final long serialVersionUID = -175729181179077787L;
 	private String scaling;
 
 	public Spectrum() {
@@ -29,6 +26,11 @@ public class Spectrum<T> extends Sequence<T> {
 				resolution, 
 				buffer);
 		this.scaling = scaling;
+	}
+	
+	@Override
+	public String getClassStringId() {
+		return "Spectrum";
 	}
 	
 	@Override 
