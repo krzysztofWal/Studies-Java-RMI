@@ -46,111 +46,28 @@ public class MyRmiServant extends UnicastRemoteObject implements FirstInterface 
 		return false;
 	}
 
-	public String supMadafaka(String saySth) throws InterruptedException{
-		supMadafakaThread mdfTh= new supMadafakaThread(saySth);
-		mdfTh.join();
-		return localMadafaka;
-	}
-
-	public String supSamuel() throws InterruptedException{
-		supSamuelThread susThr = new supSamuelThread();
-		susThr.join();
-		return localSamuel;
-	}
-
-	//zwraca SaveRemotelyResult
 	public String saveRemotely(Pakcet pckt, ClientCallbackInterface clbck) throws RemoteException,InterruptedException {
-		SaveRemotelyThread srmtlTh = new SaveRemotelyThread(pckt, clbck);
-		String saveRemotelyResult = srmtlTh.saveRemotelyResult;
-		System.out.println("Thread waiting");
-	//	srmtlTh.join();
-		srmtlTh.notify();
-		return saveRemotelyResult;
-	}
-	
-	/*
-	 * W¹tki u¿yte w wykonywaniu poszczególnych metod
-	 */
-	
-	class supMadafakaThread extends Thread{
-		String localSay = "";
-		
-		public supMadafakaThread(String saySth) {
-			super("SupMadafakaThread");
-			start();
-			localSay = saySth;
-		}
-		
-
-		
-		public void run( ) {
-			localMadafaka = localSay;
-		}
-	}
-	
-	class supSamuelThread extends Thread{
-		public supSamuelThread() {
-			super("SupSamuelThread");
-			start();
-		}
-	
-		private String locSupSamuel() {
-			String temp = "Who stole my madafaka?";
-			return temp;
-		}
-		
-		public void run() {
-			localSamuel = this.locSupSamuel();
-		}
-	}
-	
-	class RegisterThread extends Thread {
-		ClientCallbackInterface clbk;
-		
-		RegisterThread(ClientCallbackInterface clbk) {
-			
-		}
-	}
-	
-	// zapisuje wynik w zmiennej saveRemotelyResult
-	class SaveRemotelyThread extends Thread{
-		Pakcet locObj;
-		ClientCallbackInterface clbck;
-		public String saveRemotelyResult;
-		
-		public SaveRemotelyThread(Pakcet pckt, ClientCallbackInterface clbck) throws InterruptedException{
-			super("saveRemotelyThread");
-			saveRemotelyResult = "";
-			synchronized(this) {
-				//System.out.println(pckt.getClassStringId());
-				//System.out.println((new TimeHistory<Integer>()).getClassStringId());
-				//System.out.println(pckt.getClassStringId().equals((new TimeHistory<Integer>()).getClassStringId()));
-				//System.out.println(pckt.getClassStringId().compareTo((new TimeHistory<Integer>()).getClassStringId()));
-				if (pckt.getClassStringId().equals((new TimeHistory<Integer>()).getClassStringId())) {
-					if (!thMap.containsKey(pckt.toString())) {
-						thMap.put(pckt.toString(),new PcktClientPair(pckt, clbck));
-						saveRemotelyResult = "Saved sent TimeHistory packet";
-					} else {
-						saveRemotelyResult = "TimeHistory packet already sent";
-					}
-				} else if (pckt.getClassStringId().equals((new Spectrum<Integer>()).getClassStringId())) {
-					if (!spMap.containsKey(pckt.toString())) {
-						spMap.put(pckt.toString(),new PcktClientPair(pckt, clbck));
-						saveRemotelyResult = "Saved sent Spectrum packet";
-					} else {
-						saveRemotelyResult = "Spectrum packet already sent";
-					}
+		String saveRemotelyResult = "";
+		synchronized(this) {
+			if (pckt.getClassStringId().equals((new TimeHistory<Integer>()).getClassStringId())) {
+				if (!thMap.containsKey(pckt.toString())) {
+					thMap.put(pckt.toString(),new PcktClientPair(pckt, clbck));
+					saveRemotelyResult = "Saved sent TimeHistory packet";
 				} else {
-					saveRemotelyResult = "Failed saving package";
+					saveRemotelyResult = "TimeHistory packet already sent";
 				}
-				this.wait();
-				System.out.println("Thread finished");
-				start();
+			} else if (pckt.getClassStringId().equals((new Spectrum<Integer>()).getClassStringId())) {
+				if (!spMap.containsKey(pckt.toString())) {
+					spMap.put(pckt.toString(),new PcktClientPair(pckt, clbck));
+					saveRemotelyResult = "Saved sent Spectrum packet";
+				} else {
+					saveRemotelyResult = "Spectrum packet already sent";
+				}
+			} else {
+				saveRemotelyResult = "Failed saving package";
 			}
 		}
-	
-		public void run() {
-		}
+		return saveRemotelyResult;
 	}
 	
 	/*
@@ -173,4 +90,5 @@ public class MyRmiServant extends UnicastRemoteObject implements FirstInterface 
 			return this.clbck;
 		}
 	}
+	
 }
