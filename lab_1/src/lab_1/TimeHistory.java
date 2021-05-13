@@ -39,4 +39,8 @@ public class TimeHistory<T> extends Sequence<T>{
 		
 	}
 	
+	public String toStringNoData() {
+		return super.toString() + "Sensitivity: " + sensitivity + "\n";
+	}
+	
 }

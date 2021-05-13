@@ -54,4 +54,8 @@ public abstract class Sequence<T> extends Pakcet{
 				"\n";
 	}
 
+	@Override
+	public int getChannelNr() {
+		return channelNr;
+	}
 }

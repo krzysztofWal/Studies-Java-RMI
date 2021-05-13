@@ -3,8 +3,6 @@ package my_rmi;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-import lab_1.Pakcet;
-import lab_1.TimeHistory;
 
 public class MyCLientCallback  extends UnicastRemoteObject implements ClientCallbackInterface{
 	
@@ -13,9 +11,5 @@ public class MyCLientCallback  extends UnicastRemoteObject implements ClientCall
 	public MyCLientCallback() throws RemoteException{
 		super();
 	}
-	
-	public Pakcet sendToServer() throws RemoteException {
-		return new TimeHistory();
-	}
-	
+
 }

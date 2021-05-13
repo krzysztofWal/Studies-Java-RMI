@@ -24,6 +24,22 @@ public abstract class Pakcet implements Serializable {
 		return "Pakcet";
 	}
 	
+	public int getChannelNr() {
+		return -1;
+	}
+	
+	public String getDeviceName() {
+		return device;
+	}
+	
+	public String getDescription() {
+		return description;
+	}
+	
+	public long getAqusitionTime() {
+		return date;
+	}
+	
 	@Override
 	public String toString() {
 		return "Device : " + this.device +
@@ -31,6 +47,11 @@ public abstract class Pakcet implements Serializable {
 				"\nDate : " + this.date +
 				"\n";
 	}
+	
+	public String toStringNoData() {
+		return null;
+	}
+	
 	
 	
 }

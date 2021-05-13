@@ -28,6 +28,8 @@ public class Spectrum<T> extends Sequence<T> {
 		this.scaling = scaling;
 	}
 	
+	
+	
 	@Override
 	public String getClassStringId() {
 		return "Spectrum";
@@ -36,4 +38,8 @@ public class Spectrum<T> extends Sequence<T> {
 	@Override 
 	public String toString() { return super.toString() + "Scaling: " + scaling + "\n" + dataToString();}
 
+	public String toStringNoData() {
+		return super.toString() + "Scaling: " + scaling + "\n";
+	}
+	
 }
