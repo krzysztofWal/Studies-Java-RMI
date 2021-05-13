@@ -46,7 +46,6 @@ public class MyRmiServant extends UnicastRemoteObject implements FirstInterface 
 	}
 	
 	public boolean unregister(ClientCallbackInterface clbck) throws RemoteException {
-		// wypisz delikwenta do wektora
 		if (clients.remove(clbck)) {
 			System.out.println("Server.unregister(): " + clbck.hashCode());
 			return true;
@@ -79,33 +78,35 @@ public class MyRmiServant extends UnicastRemoteObject implements FirstInterface 
 	}
 	
 	public String saveToFileRemotely(long id, ListDataWrapper.packetType pckType ) throws RemoteException {
+		synchronized (this) {
 		if (pckType == ListDataWrapper.packetType.th) {
-			for (Map.Entry<String, PacketAndInfo> el : thMap.entrySet()) {
-				if (el.getValue().getId() == id) {
-					if (!el.getValue().getIfSaved()) {
-						String name = el.getValue().getPakcet().getDeviceName().replaceAll("\\s","") +
-								"Channel" + el.getValue().getPakcet().getChannelNr() +
-								el.getValue().getPakcet().getAqusitionTime();
-						saveToFile(name, "thi", el.getValue().getPakcet());
-						el.getValue().saved();
-						return "File " + name + ".thi saved remotely";
-					} else {
-						return "Packet has been already saved to file";
+				for (Map.Entry<String, PacketAndInfo> el : thMap.entrySet()) {
+					if (el.getValue().getId() == id) {
+						if (!el.getValue().getIfSaved()) {
+							String name = el.getValue().getPakcet().getDeviceName().replaceAll("\\s","") +
+									"Channel" + el.getValue().getPakcet().getChannelNr() +
+									el.getValue().getPakcet().getAqusitionTime();
+							saveToFile(name, "thi", el.getValue().getPakcet());
+							el.getValue().saved();
+							return "File " + name + ".thi saved remotely";
+						} else {
+							return "Packet has been already saved to file";
+						}
 					}
 				}
-			}
-		} else if (pckType == ListDataWrapper.packetType.sp) {
-			for (Map.Entry<String, PacketAndInfo> el : spMap.entrySet()) {
-				if (el.getValue().getId() == id) {
-					if (!el.getValue().getIfSaved()) {
-						String name = el.getValue().getPakcet().getDeviceName().replaceAll("\\s","") +
-								"_Channel" + el.getValue().getPakcet().getChannelNr() +
-								"_" + el.getValue().getPakcet().getAqusitionTime();
-						saveToFile(name, "spc", el.getValue().getPakcet());
-						el.getValue().saved();
-						return "File " + name + ".spc saved remotely";
-					} else {
-						return "Packet has been already saved to file";
+			} else if (pckType == ListDataWrapper.packetType.sp) {
+				for (Map.Entry<String, PacketAndInfo> el : spMap.entrySet()) {
+					if (el.getValue().getId() == id) {
+						if (!el.getValue().getIfSaved()) {
+							String name = el.getValue().getPakcet().getDeviceName().replaceAll("\\s","") +
+									"_Channel" + el.getValue().getPakcet().getChannelNr() +
+									"_" + el.getValue().getPakcet().getAqusitionTime();
+							saveToFile(name, "spc", el.getValue().getPakcet());
+							el.getValue().saved();
+							return "File " + name + ".spc saved remotely";
+						} else {
+							return "Packet has been already saved to file";
+						}
 					}
 				}
 			}
@@ -114,16 +115,18 @@ public class MyRmiServant extends UnicastRemoteObject implements FirstInterface 
 	}
 	
 	public Pakcet receiveLocally(long id, ListDataWrapper.packetType pckType) throws RemoteException {
-		if (pckType == ListDataWrapper.packetType.th) {
-			for (Map.Entry<String, PacketAndInfo> el : thMap.entrySet()) {
-				if (el.getValue().getId() == id) {
-					return el.getValue().getPakcet();
+		synchronized(this) {
+			if (pckType == ListDataWrapper.packetType.th) {
+				for (Map.Entry<String, PacketAndInfo> el : thMap.entrySet()) {
+					if (el.getValue().getId() == id) {
+						return el.getValue().getPakcet();
+					}
 				}
-			}
-		} else if (pckType == ListDataWrapper.packetType.sp) {
-			for (Map.Entry<String, PacketAndInfo> el : spMap.entrySet()) {
-				if (el.getValue().getId() == id) {
-					return el.getValue().getPakcet();
+			} else if (pckType == ListDataWrapper.packetType.sp) {
+				for (Map.Entry<String, PacketAndInfo> el : spMap.entrySet()) {
+					if (el.getValue().getId() == id) {
+						return el.getValue().getPakcet();
+					}
 				}
 			}
 		}
@@ -235,6 +238,9 @@ public class MyRmiServant extends UnicastRemoteObject implements FirstInterface 
 		return temp;
 	}
 	
+	/*
+	 * zapisuje do pliku
+	 */
 	private boolean saveToFile(String name, String extension, Pakcet pckt) {
 		byte[] binaryData = serialize(pckt);
 		try {
