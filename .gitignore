@@ -1,3 +1,5 @@
 /java_rmi_lab/
 /.metadata/
 */bin/
+findAndReplace.sh
+*/.gitignore
